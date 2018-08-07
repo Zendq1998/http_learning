@@ -19,7 +19,12 @@ server.listen(3000, () => {
 
 我们来运行这一段代码：``node index.js``，启动了这个TCP服务器，当执行``listen``时，会将服务器绑定到``3000``端口，并在终端打印一段消息。
 
+![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/1.png?raw=true)
+
 现在，让我们来用本地作为客户端，用telnet来进行连接：
 
+![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/2.png?raw=true)
 
 再回到服务器的终端，会看到新的消息会打印出来，证明有新的连接。
+
+![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/3.png?raw=true)
