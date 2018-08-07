@@ -1,5 +1,7 @@
 这是一个基于TCP的聊天程序。
 
+### 创建连接
+
 ```js
 // index.js
 import net from "net";
@@ -28,3 +30,44 @@ server.listen(3000, () => {
 再回到服务器的终端，会看到新的消息会打印出来，证明有新的连接。
 
 ![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/3.png?raw=true)
+
+### 接受连接
+
+我们先在外层作用域添加一个计数器：
+
+```js
+// 追踪连接数
+let count = 0
+```
+
+接着，我们需要修改回调函数内容，把计数器递增的逻辑添加上去：
+
+```js
+const server = net.createServer(conn => {
+  conn.write(
+    '\n > welcome to \033[92mnode-chat\033[39m!'
+  + '\n > ' + count + ' other people are connect at this time.\n > please write your name and press enter: '
+  )
+  count ++
+})
+```
+
+重启服务器之后再次通过telent进行连接：
+
+![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/4.png?raw=true)
+
+
+如图所示：当开启第二个终端连接进去之后，``count``就增加了一个！
+
+![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/5.png?raw=true)
+
+当客户端请求关闭连接时，计数器变量就进行递减操作：
+
+```js
+conn.on('close', () => {
+  count --
+})
+```
+
+当底层套接字关闭时，会触发``close``事件。
+
