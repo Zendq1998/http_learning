@@ -71,3 +71,100 @@ conn.on('close', () => {
 
 当底层套接字关闭时，会触发``close``事件。
 
+### data事件
+
+我们来看看如何处理客户端发送的数据。首先要处理的是用户输入的昵称（nickname），所以，我们从监听data事件开始。
+为了测试，我们在服务器端的控制台打印客户端发来的数据。
+
+```js
+conn.on('data', (data) => {
+  console.log(data)
+})
+```
+
+![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/6.png?raw=true)
+
+![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/7.png?raw=true)
+
+如图所示，当我们输入数据并按下回车后，服务器端的控制台就直接将数据打印出来了，不过这个数据是客户端发送来的数据对应的Buffer对象。客户端传来的数据是``'zdq'``每一个字符按照ASCII编码对应的十六进制正好就是服务端打印出来的前三个``7a``、``64``、``71``。这也正说明了TCP协议是面向字节的特性：TCP对字符是完全无知的，因为不同的编码会导致传输的字节数不同，所以TCP允许数据以ASCII字符（每一个字符一个字节）或者Unicode（即每个字符四个字节）进行传输。
+
+想要获取字符串形式的数据，可以通过``net.Stream#setEncoding``方法来设置编码：
+
+```js
+// index.js
+conn.setEncoding('utf8')
+```
+
+效果在这里就不做展示了，大家可以自己去试一下～
+
+至此，我们已经可以让客户端和服务器进行交互了，接下来我们要让更多的客户端加入聊天。
+
+### 状态以及记录连接情况
+
+此前定义的计数器通常称为状态。因为，在本例中，两个不同连接的用户需要修改同一个状态变量，在Node中成为共享状态的并发。
+
+为了能够向其他连接进来的客户端发送和广播消息，我们需要对该状态进行拓展，来追踪到底谁连接进来了。
+
+当客户端输入了昵称之后，就认为该客户端已经连接成功，并可以接受消息了。
+
+首先，我们要记录设置了昵称的用户，因此引入一个新的状态变量，``users``：
+
+```js
+let users = {}
+```
+
+然后，在每一个连接中引入一个nickname变量：
+
+```js
+// 当前连接昵称
+  let nickname
+  ...
+   // 监听用户输入事件
+  conn.on('data', (data) => {
+    // 接收到数据时，将\r\n(相当于按下回车键)清除
+    // 删除回车符
+    data = data.replace('\r\n', '')
+    console.log(data)
+    // 用户第一次输入并回车
+    if (!nickname) {
+      if (users[data]) {
+        // user中已经存在data字段
+        conn.write(
+          '\033[93m> This nickname already in use. Please try agin:\033[39m '
+        )
+        return
+      }
+      else {
+        nickname = data
+        // 通过该连接nickname作为索引，把该连接的流对象存入全局共享的users状态中
+        users[nickname] = conn
+        // 通知所有连接客户端来新人了～
+        for(let i in users) {
+          users[i].write(
+            '\033[90m > ' + nickname + ' joined the room\033[39m\n'
+          )
+        }
+      }
+    }
+    // 用户已经完成用户名注册，接下来就是聊天消息，需要显示给其他客户端：
+    else {
+      for (i in users) {
+        // 判断语句确保消息只发送给除了自己以外其他客户端
+        if (i != nickname) {
+          users[i].write(
+            '\033[96m > ' + nickname + ':\033[39m ' + data + '\n'
+          )
+        }
+      }
+    }
+  })
+```
+
+下图展示了两个客户端连接服务器之后相互聊天的场景：
+
+![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/8.jpg?raw=true)
+
+
+
+
+
