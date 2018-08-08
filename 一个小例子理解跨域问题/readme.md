@@ -62,3 +62,5 @@ http.createServer((request, response) => {
 }).listen(8888)
 ```
 
+![](https://github.com/Zendq1998/http_learning/blob/master/%E4%B8%80%E4%B8%AA%E5%B0%8F%E4%BE%8B%E5%AD%90%E7%90%86%E8%A7%A3%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/img/1.png?raw=true)
+
