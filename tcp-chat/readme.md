@@ -165,6 +165,60 @@ let users = {}
 ![](https://github.com/Zendq1998/http_learning/blob/master/tcp-chat/img/8.jpg?raw=true)
 
 
+### 进一步完善此程序
+
+我们先把给所有用户广播消息的的这部分逻辑抽出来（第二个参数代表是否需要对自己发送），这样以后就可以更好地复用这段代码：
+
+```js
+// 广播通知其他用户信息
+function broadcast (msg, exceptMyself) {
+  for (let i in users) {
+    if (!exceptMyself || i != nickname) {
+      users[i].write(msg)
+    }
+  }
+}
+```
+
+把之前写的广播部分都用这个方法替换掉，简单易懂，一目了然：
+
+```js
+//..
+broadcast('\033[90m > ' + nickname + ' joined the room\033[39m\n')
+//..
+broadcast('\033[96m > ' + nickname + ':\033[39m ' + data + '\n', true)
+```
+
+当有人断开连接时（mac上关闭telnet连接是按``control + ]``回到telnet命令后，再输入``quit``命令即可断开连接），我们清除数组中对应的元素：
+
+```js
+// 用户断开连接的监听事件
+  conn.on('close', () => {
+    count --
+    console.log("close")
+    delete users[nickname]
+  })
+```
+
+然后利用上面的``broadcast``方法为所有剩下的用户广播某人离开的信息：
+
+```js
+//...
+broadcast('\033[90m > ' + nickname + ' left the room\033[39m\n')
+```
+
+这样以来，当有用户断开连接时，剩下的所有人就会收到他离开的消息。
+
+完成～
+
+
+### 一个IRC客户端程序
+
+在成功实现了一个TCP服务器之后，我们进一步利用node实现一个TCP客户端。
+
+IRC是因特网中继聊天(Internet Relay Chat)的缩写，它也是一项常用的基于TCP的协议。
+
+持续更新～
 
 
 

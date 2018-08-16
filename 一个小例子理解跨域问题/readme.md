@@ -62,5 +62,30 @@ http.createServer((request, response) => {
 }).listen(8888)
 ```
 
+启动这两个服务器，再让本地的浏览器去访问``localhost:8888``（即``server1``）：
+
 ![](https://github.com/Zendq1998/http_learning/blob/master/%E4%B8%80%E4%B8%AA%E5%B0%8F%E4%BE%8B%E5%AD%90%E7%90%86%E8%A7%A3%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/img/1.png?raw=true)
+
+可以看到，服务器为我们返回了``index.html``这个页面，同时，这个页面的``script``标签中有一个向本地``8887``端口发送的ajax请求。也就是说，现在，我们的``localhost:8888``页面向``localhost:8887``去请求资源了，我们来看一下请求的结果：
+
+![](https://github.com/Zendq1998/http_learning/blob/master/%E4%B8%80%E4%B8%AA%E5%B0%8F%E4%BE%8B%E5%AD%90%E7%90%86%E8%A7%A3%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/img/2.png?raw=true)
+
+因为浏览器同域限制的原因，``8888``端口是不可以请求``8887``端口的资源的。
+
+### 解决方法1——服务器设置header
+
+再来看一下浏览器的报错：``No 'Access-Control-Allow-Origin' header is present on the requested resourse``，这是一个服务端关于跨域设置的header属性，被请求的资源中没有出现这个请求头，所以``localhost:8888``不允许去获取该资源。
+
+那我们就在被请求的服务器，也就是``server2``上设置这个header：
+
+```js
+// server2.js
+  response.writeHead(200, {
+    'Access-Control-Allow-Origin': '*'
+  })
+```
+
+现在重启服务器并刷新浏览器，可以看到控制台的报错消失了。
+
+### 解决方法2——jsonp
 

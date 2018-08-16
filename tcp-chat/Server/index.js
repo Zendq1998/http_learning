@@ -8,6 +8,15 @@ let users = {}
 
 // 创建服务器
 const server = net.createServer(conn => {
+  // 广播通知其他用户信息
+  function broadcast (msg, exceptMyself) {
+    for (let i in users) {
+      if (!exceptMyself || i != nickname) {
+        users[i].write(msg)
+      }
+    }
+  }
+
   // 设置接收到数据的编码
   conn.setEncoding('utf8')
 
@@ -40,29 +49,21 @@ const server = net.createServer(conn => {
         // 通过该连接nickname作为索引，把该连接的流对象存入全局共享的users状态中
         users[nickname] = conn
         // 通知所有连接客户端来新人了～
-        for(let i in users) {
-          users[i].write(
-            '\033[90m > ' + nickname + ' joined the room\033[39m\n'
-          )
-        }
+        broadcast('\033[90m > ' + nickname + ' joined the room\033[39m\n')
       }
     }
     // 用户已经完成用户名注册，接下来就是聊天消息，需要显示给其他客户端：
     else {
-      for (i in users) {
-        // 判断语句确保消息只发送给除了自己以外其他客户端
-        if (i != nickname) {
-          users[i].write(
-            '\033[96m > ' + nickname + ':\033[39m ' + data + '\n'
-          )
-        }
-      }
+      broadcast('\033[96m > ' + nickname + ':\033[39m ' + data + '\n', true)
     }
   })
 
+  // 用户断开连接的监听事件
   conn.on('close', () => {
     count --
     console.log("close")
+    delete users[nickname]
+    broadcast('\033[90m > ' + nickname + ' left the room\033[39m\n')
   })
 })
 
