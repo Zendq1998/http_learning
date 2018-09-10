@@ -33,7 +33,7 @@ const server = net.createServer(conn => {
   conn.on('data', (data) => {
     // 接收到数据时，将\r\n(相当于按下回车键)清除
     // 删除回车符
-    data = data.replace('\r\n', '')
+    // data = data.replace('\r\n', '')
     console.log(data)
     // 用户第一次输入并回车
     if (!nickname) {
