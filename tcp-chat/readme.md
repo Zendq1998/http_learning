@@ -4,7 +4,7 @@
 
 ```js
 // index.js
-import net from "net";
+const net = require('net')
 
 // 创建服务器
 const server = net.createServer(conn => {
